@@ -8,34 +8,44 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-enum Role {
-  admin = 'ADMIN',
-  engineer = 'ENGINEER',
-  intern = 'INTERN',
-}
+import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
+  constructor(private readonly userService: UsersService) {} // dependency Injection:
+  // returning existing instance i it has already been requested elsewhere the dependency is resolved and passed to your controller's constructor
   @Get() //"/users"
-  findAll(@Query('role') role?: Role) {
-    return { role };
+  findAll(@Query('role') role?: 'INTERN' | 'ENGINEER' | 'ADMIN') {
+    return this.userService.findAll(role);
   }
   @Get(':id') //"/users/id"
   findOne(@Param('id') id: string) {
-    return { id };
+    return this.userService.findOne(+id); //unary plus converts to number
   }
   @Post() //"/users"
-  createUser(@Body() user: any): any {
-    return user;
+  createUser(
+    @Body()
+    user: {
+      name: string;
+      email: string;
+      role: 'INTERN' | 'ENGINEER' | 'ADMIN';
+    },
+  ) {
+    this.userService.createUser(user);
   }
   @Patch(':id') //"/users/id"
-  updateUser(@Param('id') id: string, @Body() updatedInfo: any): any {
-    return { id, ...updatedInfo };
+  updateUser(
+    @Param('id') id: string,
+    @Body()
+    updatedInfo: {
+      name?: string;
+      email?: string;
+      role?: 'INTERN' | 'ENGINEER' | 'ADMIN';
+    },
+  ) {
+    return this.userService.updateUser(+id, updatedInfo);
   }
   @Delete(':id') //"/users/id"
   deleteUser(@Param('id') id: string) {
-    return {
-      id: id,
-      message: 'User Has been Deleted',
-    };
+    return this.userService.deleteUser(+id);
   }
 }
